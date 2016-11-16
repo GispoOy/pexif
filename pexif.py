@@ -266,6 +266,10 @@ class Rational:
         """Return the fraction a numerator, denominator tuple."""
         return (self.num, self.den)
 
+    def as_float(self):
+        """Return as number. """
+        return (float(self.num) / self.den)
+
 
 class IfdData(object):
     """Base class for IFD"""
@@ -662,7 +666,12 @@ class IfdGPS(IfdData):
         0x3: ("East or West Longitude", "GPSLongitudeRef", ASCII, 2),
         0x4: ("Longitude", "GPSLongitude", RATIONAL, 3),
         0x5: ("Altitude reference", "GPSAltitudeRef", BYTE, 1),
-        0x6: ("Altitude", "GPSAltitude", RATIONAL, 1)
+        0x6: ("Altitude", "GPSAltitude", RATIONAL, 1),
+		  0xc: ("GPS Speed Ref", "GPSSpeedRef", ASCII, 2),
+		  0xd: ("GPS Speed", "GPSSpeed", RATIONAL, 1),
+		  0xe: ("GPS Track Ref", "GPSTrackRef", ASCII, 2),
+		  0xf: ("GPS Track", "GPSTrack", RATIONAL, 1),
+		  0x12: ("GPS Datum", "GPSMapDatum", ASCII)
         }
 
     def __init__(self, e, offset, exif_file, mode, data=None):
@@ -1230,3 +1239,49 @@ class JpegFile:
         gps.GPSLongitude = [Rational(deg, 1),
                             Rational(min, 1),
                             Rational(sec, JpegFile.SEC_DEN)]
+
+    def set_track(self, trackRef, trackDir):
+        """Set GPS Track direction to a given direction (true direction)"""
+        if self.mode != "rw":
+            raise RWError
+
+        if trackRef in ("T", "t"):
+            trackRef = "T"
+        elif trackRef in ("M", "m"):
+            trackRef = "M"
+        else:
+            print "Invalid Track Reference, should be T or M "
+            sys.exit()
+
+        trackDir = float(trackDir)
+
+        gps = self.exif.primary.GPS
+
+        gps.GPSTrackRef = trackRef
+        gps.GPSTrack = [Rational(int(trackDir*1000000),1000000)]
+       
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
